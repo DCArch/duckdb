@@ -1,4 +1,5 @@
 #include "benchmark_runner.hpp"
+#include "../dcsim_hooks.h"
 
 #include "duckdb/common/profiler.hpp"
 #include "duckdb/common/file_system.hpp"
@@ -140,6 +141,7 @@ void BenchmarkRunner::RunBenchmark(Benchmark *benchmark) {
 		return;
 	}
 	auto nruns = benchmark->NRuns();
+	DCSimStartGlobalROI();
 	for (size_t i = 0; i < nruns + 1; i++) {
 		bool hotrun = i > 0;
 		if (hotrun) {
@@ -190,6 +192,7 @@ void BenchmarkRunner::RunBenchmark(Benchmark *benchmark) {
 		}
 		benchmark->Cleanup(state.get());
 	}
+	DCSimEndGlobalROI();
 	benchmark->Finalize();
 }
 
