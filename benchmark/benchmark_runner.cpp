@@ -141,9 +141,14 @@ void BenchmarkRunner::RunBenchmark(Benchmark *benchmark) {
 		return;
 	}
 	auto nruns = benchmark->NRuns();
-	DCSimStartGlobalROI();
 	for (size_t i = 0; i < nruns + 1; i++) {
 		bool hotrun = i > 0;
+		// DCSim: the i==0 iteration is an untimed warmup run whose result is discarded.
+		// Start the ROI only once it has completed, so the traced/measured region begins
+		// on a warm buffer manager + plan cache instead of the cold first execution.
+		if (i == 1) {
+			DCSimStartGlobalROI();
+		}
 		if (hotrun) {
 			Log(StringUtil::Format("%s\t%d\t", benchmark->name, i));
 		}
