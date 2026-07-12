@@ -224,6 +224,7 @@ void print_help() {
 	fprintf(stderr, "              --query                Prints query of the benchmark\n");
 	fprintf(stderr, "              --root-dir             Sets the root directory for where to store temp data and "
 	                "look for the 'benchmarks' directory\n");
+	fprintf(stderr, "              --nruns=n              Overrides the number of hot runs per benchmark (default: 5)\n");
 	fprintf(stderr, "              --disable-timeout      Disables killing the run after a certain amount of time has "
 	                "passed (30 seconds by default)\n");
 	fprintf(stderr,
@@ -304,6 +305,9 @@ void parse_arguments(const int arg_counter, char const *const *arg_values) {
 			instance.configuration.meta = BenchmarkMetaType::QUERY;
 		} else if (arg == "--disable-timeout") {
 			instance.configuration.timeout_duration = optional_idx();
+		} else if (StringUtil::StartsWith(arg, "--nruns=")) {
+			auto splits = StringUtil::Split(arg, '=');
+			Benchmark::NRunsOverride() = Value(splits[1]).DefaultCastAs(LogicalType::UBIGINT).GetValue<uint64_t>();
 		} else if (StringUtil::StartsWith(arg, "--out=") || StringUtil::StartsWith(arg, "--log=")) {
 			auto splits = StringUtil::Split(arg, '=');
 			if (splits.size() != 2) {

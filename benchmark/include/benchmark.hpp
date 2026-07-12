@@ -82,9 +82,16 @@ public:
 	virtual bool RequireReinit() {
 		return false;
 	}
+	//! Global override for the number of hot runs (0 = use per-benchmark default).
+	//! Set from the runner's --nruns=N flag; lets the DCSim ROI work amount be
+	//! pinned without editing each benchmark.
+	static size_t &NRunsOverride() {
+		static size_t nruns_override = 0;
+		return nruns_override;
+	}
 	//! The amount of runs to do for this benchmark
 	virtual size_t NRuns() {
-		return DEFAULT_NRUNS;
+		return NRunsOverride() != 0 ? NRunsOverride() : DEFAULT_NRUNS;
 	}
 	//! The timeout for this benchmark (in seconds)
 	virtual optional_idx Timeout(const BenchmarkConfiguration &config) {

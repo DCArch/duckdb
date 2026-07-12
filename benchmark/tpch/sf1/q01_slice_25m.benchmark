@@ -1,0 +1,19 @@
+# name: benchmark/tpch/sf1/q01_slice_25m.benchmark
+# description: TPC-H-derived q01 slice (first 25m lineitem rows via rowid pushdown) — DCSim work-based-ROI calibration
+# group: [sf1]
+
+include benchmark/tpch/tpch_load.benchmark.in
+
+name Q01_SLICE_25m
+group tpch
+subgroup sf${sf}
+
+run
+SELECT l_returnflag, l_linestatus, sum(l_quantity), sum(l_extendedprice),
+       sum(l_extendedprice * (1 - l_discount)),
+       sum(l_extendedprice * (1 - l_discount) * (1 + l_tax)),
+       avg(l_quantity), avg(l_extendedprice), avg(l_discount), count(*)
+FROM lineitem
+WHERE rowid < 25000000 AND l_shipdate <= DATE '1998-09-02'
+GROUP BY l_returnflag, l_linestatus
+ORDER BY l_returnflag, l_linestatus;
