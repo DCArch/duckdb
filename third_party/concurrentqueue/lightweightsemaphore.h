@@ -282,7 +282,14 @@ private:
 		// Is there a better way to set the initial spin count?
 		// If we lower it to 1000, testBenaphore becomes 15x slower on my Core i7-5930K Windows PC,
 		// as threads start hitting the kernel semaphore.
-		int spin = 10000;
+		//
+		// DCSim: spin count cut 10000 -> 32. Under binary-instrumented simulation
+		// every spin iteration is a simulated instruction whose duration is
+		// quantized by the simulator's phase scheduling, so idle-worker spinning
+		// inflated TPC-H ROI instruction counts 4-9x (12-27B vs the 2.9B hot run)
+		// and fed a timing feedback loop (13-287x cycle outliers). Blocking on the
+		// kernel semaphore instead is futex-precise in the simulator's event model.
+		int spin = 32;
 		while (--spin >= 0)
 		{
 			oldCount = m_count.load(std::memory_order_relaxed);
@@ -316,7 +323,8 @@ private:
 	{
 		assert(max > 0);
 		ssize_t oldCount;
-		int spin = 10000;
+		// DCSim: 10000 -> 32, see waitWithPartialSpinning above.
+		int spin = 32;
 		while (--spin >= 0)
 		{
 			oldCount = m_count.load(std::memory_order_relaxed);
