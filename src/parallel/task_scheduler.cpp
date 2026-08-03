@@ -278,7 +278,14 @@ void TaskScheduler::ExecuteForever(atomic<bool> *marker) {
 	shared_ptr<Task> task;
 	// loop until the marker is set to false
 	while (*marker) {
-		if (!block_allocator.SupportsFlush()) {
+		// DCSim: idle workers must do a single UNTIMED wait (pure futex). The
+		// upstream timed-wait/flush path below wakes every idle worker each
+		// 0.5s of HOST time to run allocator bookkeeping; under simulation a
+		// multi-hour ROI turns that into tens of thousands of wakeups x 63
+		// idle workers x ~1000s of instructions each — the 12-27B retired vs
+		// 2.9B native inflation seen in the L4 study. Allocator flush hygiene
+		// is irrelevant for benchmark runs.
+		if (true || !block_allocator.SupportsFlush()) {
 			// allocator can't flush, just start an untimed wait
 			queue->semaphore.wait();
 		} else if (!queue->semaphore.wait(INITIAL_FLUSH_WAIT)) {
